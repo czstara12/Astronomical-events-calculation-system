@@ -455,6 +455,7 @@ class AstronomyManager:
         )
         
     def calculate(self):
+        self.object_form.calculate()
         # 显示尚未实现功能的提示消息
         messagebox.showinfo("Info", "This feature has not yet been implemented")
 

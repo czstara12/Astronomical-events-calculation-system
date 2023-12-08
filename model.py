@@ -362,4 +362,7 @@ class CelestialObjectForm:
             print("Record updated successfully.")
         else:
             print("Celestial Object not found.")
+    
+    def calculate(self):
+        None
 
