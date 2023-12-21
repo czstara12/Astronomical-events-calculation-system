@@ -1,4 +1,5 @@
 from dataGateWay import OrbitalParameter
+import ephem
 
 class OrbitalParametersForm:
     def add_parameter(self, id=None, name=None, data_format=None, line_1=None, line_2=None, line_3=None, description=None):
@@ -95,3 +96,31 @@ class OrbitalParametersForm:
     def get_all_parameters(self):
         # 调用 OrbitalParameter 类的静态方法来获取所有轨道参数
         return OrbitalParameter.get_all_parameters()
+
+    def get_star_data_format(self, star_name):
+        parameter = self.get_parameter_by_name(star_name)
+        if parameter:
+            return parameter.get_data_format()
+        else:
+            return None
+
+    def calculate_constellation(self, star_name, date_str):
+        try:
+            data_format = self.get_star_data_format(star_name)
+
+            if data_format == "build_in":
+                date = ephem.Date(date_str)
+                star_code = f'''
+star = ephem.{star_name.capitalize()}()
+star.compute("{date}")
+constellation = ephem.constellation(star)
+'''
+                namespace = {}
+                exec(star_code, globals(), namespace)
+
+                return namespace['constellation']
+            else:
+                return "Unsupported data format or star name."
+        except Exception as e:
+            return f"Error: {str(e)}"
+

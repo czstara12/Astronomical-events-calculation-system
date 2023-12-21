@@ -19,3 +19,15 @@ main.py
 model.py
 
 业务逻辑(核心)
+
+## 使用
+
+请安装依赖库
+```shell
+pip install -r .\requirements.txt
+```
+
+
+## 已实现的功能
+
+1. 计算星座

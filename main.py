@@ -30,10 +30,6 @@ class AstronomyManager:
         self.delete_parameter_button = tk.Button(self.object_frame, text="Delete Selected Parameter", command=self.delete_selected_parameter)
         self.delete_parameter_button.grid(row=0, column=2)
 
-        # 添加计算按钮
-        self.calculate_button = tk.Button(self.object_frame, text="Calculate", command=self.calculate)
-        self.calculate_button.grid(row=0, column=3)
-
         # 创建表格控件
         self.parameter_tree = ttk.Treeview(root, columns=("ID", "Name", "Data Format", "Line 1", "Line 2", "Line 3", "Description"), show='headings')
         self.parameter_tree.heading("ID", text="ID")
@@ -58,6 +54,43 @@ class AstronomyManager:
         # 添加导入按钮
         self.import_button = tk.Button(self.object_frame, text="Import Data", command=self.on_import_click)
         self.import_button.grid(row=0, column=5)
+
+
+        # 添加计算星座的按钮
+        self.constellation_button = tk.Button(self.object_frame, text="Calculate Constellation", command=self.open_constellation_window)
+        self.constellation_button.grid(row=0, column=6)
+
+    def open_constellation_window(self):
+        # 创建新窗口
+        self.constellation_window = tk.Toplevel(self.root)
+        self.constellation_window.title("Constellation Calculator")
+
+        # 创建输入字段和标签
+        tk.Label(self.constellation_window, text="Star Name:").grid(row=0, column=0)
+        self.star_name_entry = tk.Entry(self.constellation_window)
+        self.star_name_entry.grid(row=0, column=1)
+
+        tk.Label(self.constellation_window, text="Date (YYYY-MM-DD):").grid(row=1, column=0)
+        self.date_entry = tk.Entry(self.constellation_window)
+        self.date_entry.grid(row=1, column=1)
+
+        # 添加提交按钮
+        submit_button = tk.Button(self.constellation_window, text="Submit", command=self.calculate_constellation)
+        submit_button.grid(row=2, column=0, columnspan=2)
+
+    def calculate_constellation(self):
+        star_name = self.star_name_entry.get()
+        date_str = self.date_entry.get()
+
+        # 调用后端方法计算星座
+        result = self.parameter_form.calculate_constellation(star_name, date_str)
+
+        # 显示结果
+        messagebox.showinfo("Constellation Result", str(result))
+
+        # 关闭新创建的窗口
+        self.constellation_window.destroy()
+
 
     def on_export_click(self):
         file_path = filedialog.asksaveasfilename(defaultextension=".csv", filetypes=[("CSV files", "*.csv")])
@@ -212,10 +245,6 @@ class AstronomyManager:
             description=description
         )
 
-    # 计算方法
-    def calculate(self):
-        # 显示尚未实现功能的提示消息
-        messagebox.showinfo("Info", "This feature has not yet been implemented")
 
 # 创建 Tkinter 窗口并运行
 root = tk.Tk()
