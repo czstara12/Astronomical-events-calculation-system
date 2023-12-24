@@ -1,15 +1,16 @@
 import tkinter as tk
 from tkinter import ttk, filedialog, messagebox
-from model import OrbitalParametersForm  # 导入新的 Form 类
+from model import OrbitalDataManager, AstronomyCalculator # 导入新的 Form 类
 import csv
 
-class AstronomyManager:
+class mainUI:
     def __init__(self, root):
         self.root = root
         self.root.title("Orbital Parameters Management System")
 
         # 实例化表单类
-        self.parameter_form = OrbitalParametersForm()  # 使用新的 Form 类
+        self.parameter_form = OrbitalDataManager()  # 使用新的 Form 类
+        self.astronomy_calculator = AstronomyCalculator(self.parameter_form)
 
         root.grid_rowconfigure(0, weight=1)
         root.grid_columnconfigure(0, weight=1)
@@ -55,10 +56,45 @@ class AstronomyManager:
         self.import_button = tk.Button(self.object_frame, text="Import Data", command=self.on_import_click)
         self.import_button.grid(row=0, column=5)
 
-
         # 添加计算星座的按钮
         self.constellation_button = tk.Button(self.object_frame, text="Calculate Constellation", command=self.open_constellation_window)
-        self.constellation_button.grid(row=0, column=6)
+        self.constellation_button.grid(row=1, column=0)
+
+        # 添加计算星体位置的按钮
+        self.position_button = tk.Button(self.object_frame, text="Calculate Position", command=self.open_position_window)
+        self.position_button.grid(row=1, column=1)
+
+    def open_position_window(self):
+        # 创建新窗口
+        self.position_window = tk.Toplevel(self.root)
+        self.position_window.title("Star Position Calculator")
+
+        # 创建输入字段和标签
+        tk.Label(self.position_window, text="Star Name:").grid(row=0, column=0)
+        self.star_name_entry_pos = tk.Entry(self.position_window)
+        self.star_name_entry_pos.grid(row=0, column=1)
+
+        tk.Label(self.position_window, text="Date (YYYY-MM-DD):").grid(row=1, column=0)
+        self.date_entry_pos = tk.Entry(self.position_window)
+        self.date_entry_pos.grid(row=1, column=1)
+
+        # 添加提交按钮
+        submit_button = tk.Button(self.position_window, text="Submit", command=self.calculate_position)
+        submit_button.grid(row=2, column=0, columnspan=2)
+
+    def calculate_position(self):
+        star_name = self.star_name_entry_pos.get()
+        date_str = self.date_entry_pos.get()
+
+        # 调用后端方法计算星体位置
+        result = self.astronomy_calculator.calculate_position(star_name, date_str)
+
+        # 显示结果
+        messagebox.showinfo("Star Position", str(result))
+
+        # 关闭新创建的窗口
+        self.position_window.destroy()
+
 
     def open_constellation_window(self):
         # 创建新窗口
@@ -83,10 +119,19 @@ class AstronomyManager:
         date_str = self.date_entry.get()
 
         # 调用后端方法计算星座
-        result = self.parameter_form.calculate_constellation(star_name, date_str)
+        result = self.astronomy_calculator.calculate_constellation(star_name, date_str)
+
+        # 格式化显示结果
+        if isinstance(result, tuple) and len(result) == 2:
+            constellation_name, (ra, dec) = result
+            formatted_result = f"Star: {star_name}\nDate: {date_str}\n" \
+                            f"Constellation: {constellation_name}\n" \
+                            f"Right Ascension: {ra}\nDeclination: {dec}"
+        else:
+            formatted_result = result  # 当结果不是预期格式时，直接显示原始结果
 
         # 显示结果
-        messagebox.showinfo("Constellation Result", str(result))
+        messagebox.showinfo("Constellation Result", formatted_result)
 
         # 关闭新创建的窗口
         self.constellation_window.destroy()
@@ -134,7 +179,7 @@ class AstronomyManager:
         messagebox.showinfo("Import", "Data imported successfully from " + file_path)
 
     # 这里是添加、删除、显示、编辑和保存轨道参数的方法
-    # 请根据 OrbitalParametersForm 类的方法来实现这些功能
+    # 请根据 OrbitalParameter 类的方法来实现这些功能
 
     def add_empty_parameter(self):
         # 在表格中添加一条空记录
@@ -248,5 +293,5 @@ class AstronomyManager:
 
 # 创建 Tkinter 窗口并运行
 root = tk.Tk()
-app = AstronomyManager(root)
+app = mainUI(root)
 root.mainloop()

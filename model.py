@@ -1,7 +1,7 @@
 from dataGateWay import OrbitalParameter
 import ephem
 
-class OrbitalParametersForm:
+class OrbitalDataManager:
     def add_parameter(self, id=None, name=None, data_format=None, line_1=None, line_2=None, line_3=None, description=None):
         parameter = OrbitalParameter()
 
@@ -104,9 +104,13 @@ class OrbitalParametersForm:
         else:
             return None
 
+class AstronomyCalculator:
+    def __init__(self, data_manager):
+        self.data_manager = data_manager
+
     def calculate_constellation(self, star_name, date_str):
         try:
-            data_format = self.get_star_data_format(star_name)
+            data_format = self.data_manager.get_star_data_format(star_name)
 
             if data_format == "build_in":
                 date = ephem.Date(date_str)
@@ -123,4 +127,27 @@ constellation = ephem.constellation(star)
                 return "Unsupported data format or star name."
         except Exception as e:
             return f"Error: {str(e)}"
+        
+    def calculate_position(self, star_name, date_str):
+        try:
+            # 将日期字符串转换为 ephem 可接受的格式
+            date = ephem.Date(date_str)
 
+            # 根据星体名称创建对应的 ephem 对象
+            if star_name.lower() == "saturn":
+                star = ephem.Saturn(date)
+            elif star_name.lower() == "moon":
+                star = ephem.Moon(date)
+            elif star_name.lower() == "venus":
+                star = ephem.Venus(date)
+            elif star_name.lower() == "jupiter":
+                star = ephem.Jupiter(date)
+            else:
+                return "Unknown star name"
+
+            # 计算星体的位置
+            star.compute(date)
+            ecl = ephem.Ecliptic(star)
+            return f"{ephem.constellation(star)}, Ecliptic Lon: {ecl.lon}, Ecliptic Lat: {ecl.lat}"
+        except Exception as e:
+            return f"Error: {str(e)}"
