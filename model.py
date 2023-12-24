@@ -151,3 +151,74 @@ constellation = ephem.constellation(star)
             return f"{ephem.constellation(star)}, Ecliptic Lon: {ecl.lon}, Ecliptic Lat: {ecl.lat}"
         except Exception as e:
             return f"Error: {str(e)}"
+
+    def calculate_detailed_position(self, star_name, date_str):
+        try:
+            star_code = f'''
+star = ephem.{star_name.capitalize()}("{date_str}")
+star.compute()
+details = {{
+    "ra": str(star.ra),
+    "dec": str(star.dec),
+    "ecl_lon": str(ephem.Ecliptic(star).lon),
+    "ecl_lat": str(ephem.Ecliptic(star).lat),
+    "gal_lon": str(ephem.Galactic(star).lon),
+    "gal_lat": str(ephem.Galactic(star).lat),
+    "a_ra": str(star.a_ra),
+    "a_dec": str(star.a_dec),
+    "g_ra": str(star.g_ra),
+    "g_dec": str(star.g_dec),
+    "elong": str(star.elong),
+    "mag": str(star.mag),
+    "size": str(star.size),
+    "radius": str(star.radius),
+    "sun_distance": str(star.sun_distance),
+    "earth_distance": str(star.earth_distance),
+    "phase": str(star.phase)
+}}
+'''
+            namespace = {}
+            exec(star_code, globals(), namespace)
+
+            return namespace['details']
+        except Exception as e:
+            return f"Error: {str(e)}"
+        
+    def calculate_next_seasonal_points(self, date_str):
+        try:
+            results = {
+                "next_vernal_equinox": ephem.next_vernal_equinox(date_str),
+                "next_summer_solstice": ephem.next_summer_solstice(date_str),
+                "next_autumnal_equinox": ephem.next_autumnal_equinox(date_str),
+                "next_winter_solstice": ephem.next_winter_solstice(date_str)
+            }
+            return {k: v.datetime().strftime("%Y-%m-%d %H:%M:%S UTC") for k, v in results.items()}
+        except Exception as e:
+            return f"Error: {str(e)}"
+        
+        
+    def calculate_moon_details(self, date_str):
+        try:
+            results = {
+                "next_full_moon": ephem.next_full_moon(date_str),
+                "previous_full_moon": ephem.previous_full_moon(date_str),
+                "next_new_moon": ephem.next_new_moon(date_str),
+                "previous_new_moon": ephem.previous_new_moon(date_str),
+                "next_first_quarter_moon": ephem.next_first_quarter_moon(date_str),
+                "previous_first_quarter_moon": ephem.previous_first_quarter_moon(date_str),
+                "next_last_quarter_moon": ephem.next_last_quarter_moon(date_str),
+                "previous_last_quarter_moon": ephem.previous_last_quarter_moon(date_str)
+            }
+            moon = ephem.Moon(date_str)
+            moon.compute()
+            moon_details = {
+                "libration_long": moon.libration_long,
+                "libration_lat": moon.libration_lat,
+                "colong": moon.colong,
+                "moon_phase": moon.moon_phase,
+                "subsolar_lat": moon.subsolar_lat
+            }
+            return {k: v.datetime().strftime("%Y-%m-%d %H:%M:%S UTC") if hasattr(v, 'datetime') else str(v) for k, v in {**results, **moon_details}.items()}
+        except Exception as e:
+            return f"Error: {str(e)}"
+        

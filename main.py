@@ -1,3 +1,4 @@
+from datetime import datetime
 import tkinter as tk
 from tkinter import ttk, filedialog, messagebox
 from model import OrbitalDataManager, AstronomyCalculator # 导入新的 Form 类
@@ -64,6 +65,109 @@ class mainUI:
         self.position_button = tk.Button(self.object_frame, text="Calculate Position", command=self.open_position_window)
         self.position_button.grid(row=1, column=1)
 
+
+        # 添加计算星体详细位置的按钮
+        self.detailed_position_button = tk.Button(self.object_frame, text="Calculate Detailed Position", command=self.open_detailed_position_window)
+        self.detailed_position_button.grid(row=1, column=2)
+
+
+        # 添加计算至点和分点时间的按钮
+        self.solstice_equinox_button = tk.Button(self.object_frame, text="Calculate Solstices and Equinoxes", command=self.open_seasonal_points_window)
+        self.solstice_equinox_button.grid(row=2, column=0)
+
+
+        # 添加计算月亮详细信息的按钮
+        self.moon_details_button = tk.Button(self.object_frame, text="Calculate Moon Details", command=self.open_moon_details_window)
+        self.moon_details_button.grid(row=2, column=1)
+
+    def open_moon_details_window(self):
+        # 创建新窗口
+        self.moon_details_window = tk.Toplevel(self.root)
+        self.moon_details_window.title("Moon Details Calculator")
+
+        # 创建输入字段和标签
+        tk.Label(self.moon_details_window, text="Date (YYYY-MM-DD):").grid(row=0, column=0)
+        self.date_entry_moon_details = tk.Entry(self.moon_details_window)
+        self.date_entry_moon_details.insert(0, datetime.now().strftime("%Y-%m-%d"))
+        self.date_entry_moon_details.grid(row=0, column=1)
+
+        # 添加提交按钮
+        submit_button = tk.Button(self.moon_details_window, text="Submit", command=self.calculate_moon_details)
+        submit_button.grid(row=1, column=0, columnspan=2)
+
+    def calculate_moon_details(self):
+        date_str = self.date_entry_moon_details.get()
+
+        # 调用后端方法计算月亮的详细信息
+        results = self.astronomy_calculator.calculate_moon_details(date_str)
+
+        # 显示结果
+        result_message = "\n".join(f"{key}: {value}" for key, value in results.items())
+        messagebox.showinfo("Moon Details", result_message)
+
+        # 关闭新创建的窗口
+        self.moon_details_window.destroy()
+
+    def open_seasonal_points_window(self):
+        # 创建新窗口
+        self.seasonal_points_window = tk.Toplevel(self.root)
+        self.seasonal_points_window.title("Seasonal Points Calculator")
+
+        # 创建输入字段和标签
+        tk.Label(self.seasonal_points_window, text="Date (YYYY-MM-DD):").grid(row=0, column=0)
+        self.date_entry_seasonal_points = tk.Entry(self.seasonal_points_window)
+        self.date_entry_seasonal_points.insert(0, datetime.now().strftime("%Y-%m-%d"))
+        self.date_entry_seasonal_points.grid(row=0, column=1)
+
+        # 添加提交按钮
+        submit_button = tk.Button(self.seasonal_points_window, text="Submit", command=self.calculate_seasonal_points)
+        submit_button.grid(row=1, column=0, columnspan=2)
+
+    def calculate_seasonal_points(self):
+        date_str = self.date_entry_seasonal_points.get()
+
+        # 调用后端方法计算季节至点和分点时间
+        results = self.astronomy_calculator.calculate_next_seasonal_points(date_str)
+
+        # 显示结果
+        result_message = "\n".join(f"{key}: {value}" for key, value in results.items())
+        messagebox.showinfo("Seasonal Points", result_message)
+
+        # 关闭新创建的窗口
+        self.seasonal_points_window.destroy()
+
+    def open_detailed_position_window(self):
+        # 创建新窗口
+        self.detailed_position_window = tk.Toplevel(self.root)
+        self.detailed_position_window.title("Detailed Star Position Calculator")
+
+        # 创建输入字段和标签
+        tk.Label(self.detailed_position_window, text="Star Name:").grid(row=0, column=0)
+        self.star_name_entry_detailed = tk.Entry(self.detailed_position_window)
+        self.star_name_entry_detailed.grid(row=0, column=1)
+
+        tk.Label(self.detailed_position_window, text="Date (YYYY-MM-DD HH:MM:SS):").grid(row=1, column=0)
+        self.date_entry_detailed = tk.Entry(self.detailed_position_window)
+        self.date_entry_detailed.grid(row=1, column=1)
+
+        # 添加提交按钮
+        submit_button = tk.Button(self.detailed_position_window, text="Submit", command=self.calculate_detailed_position)
+        submit_button.grid(row=2, column=0, columnspan=2)
+
+    def calculate_detailed_position(self):
+        star_name = self.star_name_entry_detailed.get()
+        date_str = self.date_entry_detailed.get()
+
+        # 调用后端方法计算星体详细位置
+        result = self.astronomy_calculator.calculate_detailed_position(star_name, date_str)
+
+        # 显示结果
+        result_message = "\n".join(f"{key}: {value}" for key, value in result.items())
+        messagebox.showinfo("Detailed Star Position", result_message)
+
+        # 关闭新创建的窗口
+        self.detailed_position_window.destroy()
+
     def open_position_window(self):
         # 创建新窗口
         self.position_window = tk.Toplevel(self.root)
@@ -121,17 +225,8 @@ class mainUI:
         # 调用后端方法计算星座
         result = self.astronomy_calculator.calculate_constellation(star_name, date_str)
 
-        # 格式化显示结果
-        if isinstance(result, tuple) and len(result) == 2:
-            constellation_name, (ra, dec) = result
-            formatted_result = f"Star: {star_name}\nDate: {date_str}\n" \
-                            f"Constellation: {constellation_name}\n" \
-                            f"Right Ascension: {ra}\nDeclination: {dec}"
-        else:
-            formatted_result = result  # 当结果不是预期格式时，直接显示原始结果
-
         # 显示结果
-        messagebox.showinfo("Constellation Result", formatted_result)
+        messagebox.showinfo("Constellation Result", result)
 
         # 关闭新创建的窗口
         self.constellation_window.destroy()
